@@ -4,12 +4,18 @@ import {
   Column,
   BeforeInsert,
   BeforeUpdate,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
 } from 'typeorm';
 
-@Entity('users')
+@Entity('usuarios')
 export class User {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  // @PrimaryGeneratedColumn('uuid')
+  // id: string;
+
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Column('text', {
     unique: true,
@@ -22,19 +28,35 @@ export class User {
   })
   password: string;
 
-  @Column('text')
-  fullName: string;
+  // @Column('text')
+  // fullName: string;
+  // @Column('int', {
+  //   default: 1,
+  // })
+  // active: number;
 
   @Column('bool', {
     default: true,
   })
-  isActive: boolean;
+  active: boolean;
 
-  @Column('text', {
-    array: true,
-    default: ['user'],
-  })
-  roles: string[];
+  // @Column('text', {
+  //   array: true,
+  //   default: ['user'],
+  // })
+  // roles: string[];
+
+  @Column('text')
+  token_valid_after: string;
+
+  @CreateDateColumn({ name: 'created_at' })
+  created_at: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updated_at: Date;
+
+  @DeleteDateColumn({ name: 'deleted_at' })
+  deleted_at: Date;
 
   @BeforeInsert()
   checkFieldsBeforeInsert() {

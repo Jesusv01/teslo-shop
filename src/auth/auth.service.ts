@@ -3,6 +3,7 @@ import {
   BadRequestException,
   InternalServerErrorException,
   UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -22,44 +23,44 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
   async create(createUserDto: CreateUserDto) {
-    try {
-      const { password, ...userData } = createUserDto;
-      const user = this.userRepository.create({
-        ...userData,
-        password: bcrypt.hashSync(password, 10),
-      });
-      await this.userRepository.save(user);
-      delete user.password;
-      return {
-        ...user,
-        token: this.getJwtToken({ id: user.id }),
-      };
-    } catch (error) {
-      this.handleDBErrors(error);
-    }
+    const { password, ...userData } = createUserDto;
+    const user = this.userRepository.create({
+      ...userData,
+      password: bcrypt.hashSync(password, 10),
+    });
+    console.log(user);
+    const exist = await this.userRepository.findOne({
+      where: { email: createUserDto.email },
+    });
+
+    if (exist)
+      throw new NotFoundException('El email ingresado ya esta registrado');
+    await this.userRepository.save(user);
+    delete user.password;
+    return {
+      ...user,
+      token: this.getJwtToken({ id: user.id }),
+    };
   }
 
   async loginUser(loginUserDto: LoginUserDto) {
-    try {
-      const { password, email } = loginUserDto;
+    const { password, email } = loginUserDto;
 
-      const user = await this.userRepository.findOne({
-        where: { email },
-        select: { email: true, password: true, id: true },
-      });
-      if (!user)
-        throw new UnauthorizedException('Credentials are not valid (email)');
+    const user = await this.userRepository.findOne({
+      where: { email },
+      select: { email: true, password: true, id: true },
+    });
 
-      if (!bcrypt.compareSync(password, user.password))
-        throw new UnauthorizedException('Credentials are not valid (password)');
+    if (!user)
+      throw new UnauthorizedException('Credentials are not valid (email)');
 
-      return {
-        ...user,
-        token: this.getJwtToken({ id: user.id }),
-      };
-    } catch (error) {
-      console.log(error);
-    }
+    if (!bcrypt.compareSync(password, user.password))
+      throw new UnauthorizedException('Credentials are not valid (password)');
+    // delete user.password;
+    return {
+      ...user,
+      token: this.getJwtToken({ id: user.id }),
+    };
   }
 
   private getJwtToken(payload: JwtPayload) {
