@@ -8,11 +8,14 @@ import {
   Delete,
   ParseUUIDPipe,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { GetUser } from 'src/auth/decorators';
 
 @Controller('products')
 export class ProductsController {
@@ -24,6 +27,7 @@ export class ProductsController {
   }
 
   @Get()
+  @UseGuards(AuthGuard())
   findAll(@Query() paginationDTO: PaginationDto) {
     return this.productsService.findAll(paginationDTO);
   }
