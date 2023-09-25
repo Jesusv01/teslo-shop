@@ -13,6 +13,7 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserDto, LoginUserDto } from './dto';
 import { User } from './entities/user.entity';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 @Injectable()
 export class AuthService {
@@ -28,7 +29,6 @@ export class AuthService {
       ...userData,
       password: bcrypt.hashSync(password, 10),
     });
-    console.log(user);
     const exist = await this.userRepository.findOne({
       where: { email: createUserDto.email },
     });
@@ -56,11 +56,20 @@ export class AuthService {
 
     if (!bcrypt.compareSync(password, user.password))
       throw new UnauthorizedException('Credentials are not valid (password)');
-    // delete user.password;
+    delete user.password;
     return {
       ...user,
       token: this.getJwtToken({ id: user.id }),
     };
+  }
+
+  async findAll(paginationDTO: PaginationDto) {
+    const { limit = 10, offset = 0 } = paginationDTO;
+    const products = await this.userRepository.find({
+      take: limit,
+      skip: offset,
+    });
+    return products;
   }
 
   private getJwtToken(payload: JwtPayload) {

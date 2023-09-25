@@ -9,6 +9,7 @@ import {
   UseGuards,
   Req,
   UseFilters,
+  Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
@@ -16,6 +17,7 @@ import { GetUser, RawHeaders } from './decorators';
 import { CreateUserDto, LoginUserDto } from './dto';
 import { User } from './entities/user.entity';
 import { HttpErrorFilter } from 'src/middleware/http-exception.filter';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -31,6 +33,12 @@ export class AuthController {
   @UseFilters(new HttpErrorFilter())
   login(@Body() loginUserDto: LoginUserDto) {
     return this.authService.loginUser(loginUserDto);
+  }
+
+  @Get()
+  @UseGuards(AuthGuard())
+  findAll(@Query() paginationDTO: PaginationDto) {
+    return this.authService.findAll(paginationDTO);
   }
 
   @Get('private')
