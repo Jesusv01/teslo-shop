@@ -4,37 +4,56 @@ import {
   Column,
   BeforeInsert,
   BeforeUpdate,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column('text', {
+  @Column('varchar', {
+    length: 255,
     unique: true,
     nullable: false,
   })
   email: string;
 
-  @Column('text', {
+  @Column('varchar', {
+    length: 255,
     select: false,
   })
   password: string;
 
-  @Column('text')
-  fullName: string;
+  @Column('varchar', {
+    length: 255,
+  })
+  nombre_usuario: string;
 
   @Column('bool', {
     default: true,
   })
-  isActive: boolean;
+  active: boolean;
 
-  @Column('text', {
-    array: true,
-    default: ['user'],
+  @Column('timestamp')
+  last_login: Date;
+
+  @Column('text')
+  token_valid_after: string;
+
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
   })
-  roles: string[];
+  created_at: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+    onUpdate: 'CURRENT_TIMESTAMP(6)',
+  })
+  updated_at: Date;
 
   @BeforeInsert()
   checkFieldsBeforeInsert() {
