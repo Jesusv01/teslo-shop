@@ -27,6 +27,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+
   await app.listen(process.env.PORT);
   logger.log(`App listening in po ${process.env.PORT}`);
 }

@@ -14,6 +14,7 @@ import { CreateUserDto, LoginUserDto } from './dto';
 import { User } from './entities/user.entity';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { Console } from 'console';
 
 @Injectable()
 export class AuthService {
@@ -24,39 +25,38 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
   async create(createUserDto: CreateUserDto) {
-    const { password, ...userData } = createUserDto;
-    const user = this.userRepository.create({
-      ...userData,
-      password: bcrypt.hashSync(password, 10),
-    });
-    const exist = await this.userRepository.findOne({
-      where: { email: createUserDto.email },
-    });
-
-    if (exist)
-      throw new NotFoundException('El email ingresado ya esta registrado');
-    await this.userRepository.save(user);
-    delete user.password;
-    return {
-      ...user,
-      token: this.getJwtToken({ id: user.id }),
-    };
+    console.log(createUserDto);
+    try {
+      const { password, ...userData } = createUserDto;
+      const user = this.userRepository.create({
+        ...userData,
+        password: bcrypt.hashSync(password, 10),
+      });
+      await this.userRepository.save(user);
+      delete user.password;
+      return {
+        ...user,
+        token: this.getJwtToken({ id: user.id }),
+      };
+    } catch (error) {
+      this.handleDBErrors(error);
+    }
   }
 
   async loginUser(loginUserDto: LoginUserDto) {
+    // try {
     const { password, email } = loginUserDto;
-
+    console.log(loginUserDto);
     const user = await this.userRepository.findOne({
       where: { email },
       select: { email: true, password: true, id: true },
     });
-
     if (!user)
       throw new UnauthorizedException('Credentials are not valid (email)');
 
     if (!bcrypt.compareSync(password, user.password))
       throw new UnauthorizedException('Credentials are not valid (password)');
-    delete user.password;
+
     return {
       ...user,
       token: this.getJwtToken({ id: user.id }),
