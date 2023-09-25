@@ -23,6 +23,10 @@ export class CreateUserDto {
   })
   password: string;
 
+  @ApiProperty()
+  @IsString()
+  nombre_usuario: string;
+
   // @ApiProperty()
   // @IsString()
   // @MinLength(1)

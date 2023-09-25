@@ -39,6 +39,7 @@ export class AuthService {
         token: this.getJwtToken({ id: user.id }),
       };
     } catch (error) {
+      console.log(error);
       this.handleDBErrors(error);
     }
   }

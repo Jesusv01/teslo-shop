@@ -9,7 +9,7 @@ import {
   DeleteDateColumn,
 } from 'typeorm';
 
-@Entity('usuarios')
+@Entity('users')
 export class User {
   // @PrimaryGeneratedColumn('uuid')
   // id: string;
@@ -27,6 +27,9 @@ export class User {
     select: false,
   })
   password: string;
+
+  @Column('text')
+  nombre_usuario: string;
 
   // @Column('text')
   // fullName: string;
@@ -55,8 +58,8 @@ export class User {
   @UpdateDateColumn({ name: 'updated_at' })
   updated_at: Date;
 
-  @DeleteDateColumn({ name: 'deleted_at' })
-  deleted_at: Date;
+  // @DeleteDateColumn({ name: 'deleted_at' })
+  // deleted_at: Date;
 
   @BeforeInsert()
   checkFieldsBeforeInsert() {
