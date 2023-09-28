@@ -51,7 +51,6 @@ export class ChatController {
   @UseGuards(AuthGuard())
   findRooms(@GetUser('id') idUser: number, @Query('ids') ids: string[]) {
     let idArray = null;
-    console.log(ids);
     if (ids) {
       idArray = ids.map((id) => parseInt(id, 10));
     }

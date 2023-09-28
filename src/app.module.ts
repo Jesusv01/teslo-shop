@@ -9,6 +9,7 @@ import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
+import { ChatGateway } from './gateway/chat.gateway';
 
 @Module({
   imports: [
