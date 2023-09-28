@@ -4,6 +4,7 @@ import {
   InternalServerErrorException,
   UnauthorizedException,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,17 +16,21 @@ import { User } from './entities/user.entity';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { Console } from 'console';
+import { CreateImagePerfilDto } from './dto/image-perfil.dto';
+import { UserImage } from './entities/user-image.entity';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger('AuthService');
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(UserImage)
+    private readonly userImageRepository: Repository<UserImage>,
 
     private readonly jwtService: JwtService,
   ) {}
   async create(createUserDto: CreateUserDto) {
-    console.log(createUserDto);
     try {
       const { password, ...userData } = createUserDto;
       const user = this.userRepository.create({
@@ -47,10 +52,14 @@ export class AuthService {
   async loginUser(loginUserDto: LoginUserDto) {
     // try {
     const { password, email } = loginUserDto;
-    console.log(loginUserDto);
     const user = await this.userRepository.findOne({
       where: { email },
-      select: { email: true, password: true, id: true },
+      select: {
+        email: true,
+        password: true,
+        id: true,
+        active: true,
+      },
     });
     if (!user)
       throw new UnauthorizedException('Credentials are not valid (email)');
@@ -59,9 +68,27 @@ export class AuthService {
       throw new UnauthorizedException('Credentials are not valid (password)');
 
     return {
-      ...user,
+      // ...user,
       token: this.getJwtToken({ id: user.id }),
     };
+  }
+
+  async imagePerfil(createImagePerfilDto: CreateImagePerfilDto) {
+    try {
+      await this.userImageRepository.upsert([createImagePerfilDto], ['user']);
+      // await this.userImageRepository.save(userImage);
+      return {
+        message: 'created successfully',
+      };
+    } catch (error) {
+      console.log(error);
+      this.handleDBExceptons(error);
+    }
+  }
+
+  async findOneUser(id: number) {
+    const user = await this.userRepository.findOneBy({ id });
+    return user;
   }
 
   async findAll(paginationDTO: PaginationDto) {
@@ -81,5 +108,14 @@ export class AuthService {
     if (error.code === '23505') throw new BadRequestException(error.detail);
 
     throw new InternalServerErrorException('Please check server logs');
+  }
+
+  private handleDBExceptons(error: any) {
+    if (error.code === '23505') throw new BadRequestException(error.detail);
+
+    this.logger.error(error);
+    throw new InternalServerErrorException(
+      'Unexpected error, check server logs',
+    );
   }
 }

@@ -7,7 +7,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToMany,
+  ManyToMany,
 } from 'typeorm';
+import { UserImage } from './user-image.entity';
+import { Message } from 'src/chat/entities/message.entity';
+import { Room } from 'src/chat/entities/room.entity';
 
 @Entity('users')
 export class User {
@@ -37,10 +42,14 @@ export class User {
   })
   active: boolean;
 
-  @Column('timestamp')
+  @Column('timestamp', {
+    nullable: true,
+  })
   last_login: Date;
 
-  @Column('text')
+  @Column('text', {
+    nullable: true,
+  })
   token_valid_after: string;
 
   @CreateDateColumn({
@@ -55,6 +64,29 @@ export class User {
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   updated_at: Date;
+
+  @DeleteDateColumn()
+  deleted_at?: Date;
+
+  //images
+  @OneToMany(() => UserImage, (userImage) => userImage.user, {
+    cascade: true,
+    eager: true,
+  })
+  images?: UserImage[];
+
+  @OneToMany(() => Message, (message) => message.userSend, {
+    cascade: true,
+    eager: true,
+  })
+  messages: Message[];
+
+  @ManyToMany(
+    () => Room,
+    (room) => room.users, //optional
+    { onDelete: 'NO ACTION', onUpdate: 'NO ACTION', eager: true },
+  )
+  rooms?: Room[];
 
   @BeforeInsert()
   checkFieldsBeforeInsert() {

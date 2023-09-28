@@ -22,20 +22,20 @@ export class FilesController {
     private readonly configService: ConfigService,
   ) {}
 
-  @Get('product/:imageName')
+  @Get('user/:imageName')
   findOne(@Res() res: Response, @Param('imageName') imageName: string) {
     const path = this.filesService.getStaticImage(imageName);
 
     res.sendFile(path);
   }
 
-  @Post('product')
+  @Post('user')
   @UseInterceptors(
     FileInterceptor('file', {
       fileFilter: fileFilter,
       // limits: { fileSize: 1000 },
       storage: diskStorage({
-        destination: './static/products',
+        destination: './static/users',
         filename: fileNamer,
       }),
     }),
@@ -45,10 +45,10 @@ export class FilesController {
       throw new BadRequestException('Make sure that the file is an image');
     }
 
-    // const secureUrl = `${file.filename}`;
-    const secureUrl = `${this.configService.get('HOST_API')}/files/product/${
-      file.filename
-    }`;
+    const secureUrl = `${file.filename}`;
+    // const secureUrl = `${this.configService.get('HOST_API')}/files/product/${
+    //   file.filename
+    // }`;
     return { secureUrl };
   }
 }
