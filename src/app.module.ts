@@ -12,6 +12,7 @@ import { ChatModule } from './chat/chat.module';
 import { ChatGateway } from './gateway/chat.gateway';
 
 @Module({
+  providers: [ChatGateway],
   imports: [
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
